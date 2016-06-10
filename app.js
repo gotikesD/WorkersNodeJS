@@ -1,26 +1,26 @@
 var cluster = require('cluster');
-var http = require('http');
 
-const {MASTER_SETUP, CPU } = require('./config/');
+const {MASTER_SETUP, CPU , DATA } = require('./config/');
 
 
   cluster.setupMaster(MASTER_SETUP);
-
 
   for (var i = 0; i < CPU; i++) {
     cluster.fork();
   }
 
+  let a = 0;
+
   cluster.on('online', (worker) => {
-    console.log('Worker ' + worker.process.pid + ' is online');
+
+    let partSize = DATA.length/CPU;
+    let part = DATA.slice(a, partSize + a);
+      cluster.workers[worker.id].send({
+        part : part
+      });
+    a += 5;
   });
 
-  for(var w in cluster.workers) {
-    cluster.workers[w].send({
-      data : 'Hello!'
-    })
-  }
-
-  cluster.on('message', (worker,mess) => {
-    console.log(`Hi I am ${worker.id}, your message is ${mess.data}`)
+  cluster.on('message', (mess) => {
+    console.log(mess.sortedPart)
   });

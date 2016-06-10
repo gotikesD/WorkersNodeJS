@@ -1,3 +1,9 @@
-process.send({
-  data : '123'
+var algoritm = require('../algoritms/quicksort');
+
+
+process.on('message', (mess) => {
+  console.log(algoritm(mess.part));
+   process.send({
+     sortedPart : algoritm(mess.part)
+   })
 });
